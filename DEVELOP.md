@@ -54,6 +54,10 @@ helm template workspace ./charts/workspace -n agent --set namespaceOverride=agen
   rebuild** (the gateway derives the bootstrap at pod-create time). But the
   feature needs a gateway image that implements it: the `gateway.image.tag` in
   `values.yaml` must be at or after `20261002-sandboxpkgsrc2`.
+- **`packageUpstream` is ON** (`http://artifact.worker.svc.cluster.local`):
+  every NEW sandbox gets the artifact package env + the bootstrap
+  init-container. It only affects sandboxes created after the upgrade; existing
+  ones keep their config. Set it back to `""` to disable.
 - **Images are referenced as `git.agent.svc.cluster.local/abcp/...`** (the
   in-cluster registry; plaintext HTTP, configured insecure on containerd +
   buildkitd). `repo-build-image` pushes to the repo's own org
