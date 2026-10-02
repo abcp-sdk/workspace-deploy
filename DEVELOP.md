@@ -1,0 +1,73 @@
+# DEVELOP.md
+
+Developer notes for this repo. It is a **deployment-assets repo**: a Helm chart
+plus a few one-time manifests. There is no application code to build or test.
+
+## Layout
+
+```
+charts/workspace/        Helm chart (release "workspace") — the main artifact
+  templates/             one file per component; object names prefixed `workspace-`
+  values.yaml            ALL tunables; the single source of deployment config
+  system-presets.json    role presets, loaded via .Files.Get into a ConfigMap
+provisioner/             cluster-scoped StorageClass provisioner (applied out-of-band)
+manifests/               one-time / legacy objects (pre-Helm; see below)
+```
+
+## Rendering / verifying a change
+
+The chart targets namespace `agent` via `namespaceOverride` (the release
+namespace alone is not enough — every object hardcodes the helper):
+
+```sh
+helm lint ./charts/workspace --set namespaceOverride=agent
+helm template workspace ./charts/workspace -n agent --set namespaceOverride=agent
+```
+
+Expected: **15 objects** (4 Deployments, 5 Services, 1 ConfigMap, 1 Secret,
+1 ServiceAccount, Role + RoleBinding, + the webui alias Service).
+
+Always render with `packageUpstream` set as well, since that branch is
+conditional:
+
+```sh
+helm template workspace ./charts/workspace -n agent --set namespaceOverride=agent \
+  --set gateway.sandbox.packageUpstream=http://artifact.worker.svc.cluster.local
+```
+
+## Conventions / gotchas
+
+- **Two documents:** `README.md` is for users/deployers (what it deploys, how to
+  install). Keep it current when behavior or deployment changes. This file is
+  for developers.
+- **Every object name is prefixed `workspace-`** so this release can share the
+  `agent` namespace with the standalone `abcp-agent` release.
+- **The `worker` namespace must pre-exist.** The chart only creates the Role /
+  RoleBinding inside it (`templates/worker-rbac.yaml`,
+  `gateway.workerRbac.create`), and only when `gateway.enabled`.
+- **`gateway.sandbox.packageUpstream` empty = true no-op.** All three envs
+  (`SANDBOX_PACKAGE_UPSTREAM` / `SANDBOX_BOOTSTRAP_IMAGE` / `SANDBOX_HOME`) are
+  inside ONE `{{- if .Values.gateway.sandbox.packageUpstream }}` guard
+  (`templates/gateway.yaml`). Keep them together: an unconditional env would
+  change the render even when the feature is off.
+- **Changing the package-source URL is a values change only — no image
+  rebuild** (the gateway derives the bootstrap at pod-create time). But the
+  feature needs a gateway image that implements it: the `gateway.image.tag` in
+  `values.yaml` must be at or after `20261002-sandboxpkgsrc2`.
+- **Images are referenced as `git.agent.svc.cluster.local/abcp/...`** (the
+  in-cluster registry; plaintext HTTP, configured insecure on containerd +
+  buildkitd). `repo-build-image` pushes to the repo's own org
+  (`coding-workspace/<name>`), so a fresh build needs an in-registry copy into
+  `abcp/` before the chart can pull it.
+- **Verifying a registry tag:** the registry API requires auth — anonymous
+  `GET /v2/...` returns 401. Use the Forgejo PAT from
+  `charts/workspace/values.yaml` (`gateway.forgejo.token`):
+  ```sh
+  curl -u root:<pat> http://git.agent.svc.cluster.local/v2/abcp/workspace-gateway/tags/list
+  ```
+  Never commit credentials.
+- **`manifests/` is legacy.** `manifests/workspace-gateway.yaml` predates the
+  chart (superseded by `templates/gateway.yaml`); `manifests/rbac.yaml` mirrors
+  `templates/worker-rbac.yaml`. They are kept for the one-time migration only.
+- **`provisioner/workspace-local-path.yaml` is cluster-scoped** and applied
+  out-of-band (dropped into the k3s auto-apply manifests dir), not by Helm.
