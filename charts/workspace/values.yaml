@@ -123,7 +123,7 @@ workspaceExtension:
   enabled: true
   image:
     repository: git.agent.svc.cluster.local/abcp/workspace-extension
-    tag: "20260929150000"
+    tag: "20261002231000"
     pullPolicy: IfNotPresent
   # Tenant seeded with the gateway/forgejo defaults. `"*"` = every tenant.
   seedTenant: "*"
@@ -178,7 +178,7 @@ gateway:
     # init-container) at this registry, so sandbox builds fetch from the
     # in-cluster artifact instead of the public internet. Changing the URL is a
     # values change here — NO image rebuild. Empty = no injection (unchanged).
-    packageUpstream: ""
+    packageUpstream: "http://artifact.worker.svc.cluster.local"
     # Image for the bootstrap init-container. MUST be pullable by the nodes
     # (Docker Hub is usually unreachable); the default is in-cluster.
     bootstrapImage: "git.agent.svc.cluster.local/root/alpine:3.24"
