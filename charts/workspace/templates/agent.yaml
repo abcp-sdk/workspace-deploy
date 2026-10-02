@@ -10,7 +10,14 @@ metadata:
     {{- include "workspace.labels" . | nindent 4 }}
     app: {{ .Values.agent.service.name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.agent.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      # Never take the only healthy replica down first: a single-replica
+      # deployment would otherwise have a brief outage on every rollout.
+      maxUnavailable: 0
+      maxSurge: 1
   selector:
     matchLabels:
       app: {{ .Values.agent.service.name }}
@@ -28,10 +35,28 @@ spec:
           env:
             - name: NATS_URL
               value: {{ include "workspace.natsUrl" . | quote }}
+            {{- if eq .Values.agent.db.backend "pg" }}
+            # Postgres metadata backend: required for MULTI-REPLICA (a shared
+            # sqlite file cannot be written by >1 replica). The agent's PG
+            # migrations are advisory-locked, so N replicas may cold-boot safely.
+            - name: DB_BACKEND
+              value: pg
+            - name: POSTGRES_HOST
+              value: {{ .Values.agent.db.postgres.host | quote }}
+            - name: POSTGRES_PORT
+              value: {{ .Values.agent.db.postgres.port | quote }}
+            - name: POSTGRES_USER
+              value: {{ .Values.agent.db.postgres.user | quote }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.agent.db.postgres.password | quote }}
+            - name: POSTGRES_DB_AGENT
+              value: {{ .Values.agent.db.postgres.database | quote }}
+            {{- else }}
             - name: DB_BACKEND
               value: sqlite
             - name: DATABASE_URL
               value: sqlite:///data/agent.db
+            {{- end }}
             - name: PORT
               value: {{ .Values.agent.port | quote }}
             # Plain HTTP/1.1 liveness/readiness port (kubelet probes cannot
@@ -106,18 +131,36 @@ spec:
             {{- toYaml .Values.agent.resources | nindent 12 }}
           volumeMounts:
             - { mountPath: /etc/workspace-presets, name: presets, readOnly: true }
-            {{- if .Values.agent.persistence.enabled }}
+            {{- if and .Values.agent.persistence.enabled (ne .Values.agent.db.backend "pg") }}
             - { mountPath: /data, name: data, subPath: {{ .Values.agent.persistence.subPath }} }
             {{- end }}
       volumes:
         - name: presets
           configMap: { name: workspace-presets }
-        {{- if .Values.agent.persistence.enabled }}
+        {{- if and .Values.agent.persistence.enabled (ne .Values.agent.db.backend "pg") }}
         - name: data
           hostPath:
             path: {{ .Values.agent.persistence.hostPath }}
             type: {{ .Values.agent.persistence.type }}
         {{- end }}
+{{- if gt (int .Values.agent.replicas) 1 }}
+---
+# Keep at least one replica available during voluntary disruptions (node drain,
+# rollout). With replicas=2 this permits evicting one at a time.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.agent.service.name }}
+  namespace: {{ include "workspace.namespace" . }}
+  labels:
+    {{- include "workspace.labels" . | nindent 4 }}
+    app: {{ .Values.agent.service.name }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.agent.service.name }}
+{{- end }}
 ---
 apiVersion: v1
 kind: Service

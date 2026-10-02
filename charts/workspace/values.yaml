@@ -60,10 +60,25 @@ infra:
 # ---- dedicated workspace agent (h2c) ----
 agent:
   enabled: true
+  # Replica count. >1 requires db.backend=pg (a shared sqlite file cannot be
+  # written by two replicas) and gives HA: a killed replica is replaced while
+  # the others keep serving; the per-session NATS lease arbitrates turns.
+  replicas: 2
   image:
     repository: git.agent.svc.cluster.local/abcp/agent
-    tag: "20261001194505"
+    tag: "20261002130857"
     pullPolicy: IfNotPresent
+  # Metadata backend. `pg` = the SHARED Postgres (db `workspace_agent`), required
+  # for multi-replica; `sqlite` keeps the DB on a hostPath /data volume (single
+  # replica only). The DB/role are created out-of-band on the shared postgres.
+  db:
+    backend: pg
+    postgres:
+      host: "postgres.agent.svc.cluster.local"
+      port: 5432
+      user: "workspace"
+      password: "devpassword"
+      database: "workspace_agent"
   port: 8080
   # Plain HTTP/1.1 liveness/readiness port (separate from the h2c RPC port).
   healthPort: 8081
@@ -94,6 +109,8 @@ agent:
     # synchronous sqlite driver; 1 CPU throttled the event loop (starving the
     # health probe and slowing every session).
     limits: { cpu: "4", memory: 1Gi }
+  # Only used when db.backend=sqlite (a hostPath /data volume for agent.db).
+  # With db.backend=pg the agent needs NO volume.
   persistence:
     enabled: true
     # hostPath root for /data (single-node dev cluster, node-side path).
@@ -136,7 +153,7 @@ gateway:
     repository: git.agent.svc.cluster.local/abcp/workspace-gateway
     # Tag that implements SANDBOX_PACKAGE_UPSTREAM wiring (package-source
     # injection): env (runtimeprofiles) + bootstrap init-container.
-    tag: "20261002-sandboxpkgsrc2"
+    tag: "20261002132400"
     pullPolicy: IfNotPresent
   # Namespace the sandbox/service backend manages, and where its RBAC lands.
   sandbox:
@@ -253,7 +270,7 @@ webui:
   enabled: true
   image:
     repository: git.agent.svc.cluster.local/abcp/workspace-webui
-    tag: "20260929141000"
+    tag: "20261002132655"
     pullPolicy: IfNotPresent
   port: 8080
   service:
