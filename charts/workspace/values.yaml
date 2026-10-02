@@ -182,7 +182,7 @@ gateway:
     reapInterval: "10m"
   serviceLogTail: 500
   # PVCs (admin-managed storage for services). The class is the self-hosted
-  # local-path provisioner (k8s/provisioner/workspace-local-path.yaml, host
+  # local-path provisioner (provisioner/workspace-local-path.yaml, host
   # path /home/develop/PVC); defaultSize is used when pvc-create omits a size.
   pvc:
     storageClass: "workspace-local"

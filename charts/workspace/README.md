@@ -35,13 +35,13 @@ deployed here.
 # The worker namespace must exist first.
 kubectl create namespace worker
 
-helm install workspace ./k8s/chart -n agent --set namespaceOverride=agent
+helm install workspace ./charts/workspace -n agent --set namespaceOverride=agent
 ```
 
 ## Before the first Helm install (one-time cleanup)
 
 If the gateway was previously applied by hand (`kubectl apply -f
-k8s/workspace-gateway.yaml`), delete those objects first so Helm can adopt the
+manifests/workspace-gateway.yaml`), delete those objects first so Helm can adopt the
 names without an ownership conflict:
 
 ```sh
