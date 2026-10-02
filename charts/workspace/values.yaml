@@ -152,9 +152,10 @@ gateway:
   image:
     repository: git.agent.svc.cluster.local/abcp/workspace-gateway
     # Tag that implements SANDBOX_PACKAGE_UPSTREAM wiring (package-source
-    # injection: env + bootstrap init-container) AND the Helm release-detail
-    # fields (HelmReleaseInfo.chart_version/app_version/objects).
-    tag: "20261002-helmdetail"
+    # injection: env + bootstrap init-container), the Helm release-detail fields
+    # (HelmReleaseInfo.chart_version/app_version/objects) AND the agent.v1
+    # since_msg forward (vendored proto + regenerated gen/es).
+    tag: "20261002-agentsync"
     pullPolicy: IfNotPresent
   # Namespace the sandbox/service backend manages, and where its RBAC lands.
   sandbox:
