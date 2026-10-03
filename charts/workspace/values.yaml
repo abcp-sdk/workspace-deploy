@@ -155,7 +155,8 @@ gateway:
     # injection: env + bootstrap init-container), the Helm release-detail fields
     # (HelmReleaseInfo.chart_version/app_version/objects) AND the agent.v1
     # since_msg forward (vendored proto + regenerated gen/es).
-    tag: "20261002-agentsync"
+    # Also adds SANDBOX_IMAGE_REGISTRY_HOST (sandbox images from artifact).
+    tag: "20261003-sandboximg"
     pullPolicy: IfNotPresent
   # Namespace the sandbox/service backend manages, and where its RBAC lands.
   sandbox:
@@ -180,8 +181,8 @@ gateway:
     # values change here — NO image rebuild. Empty = no injection (unchanged).
     packageUpstream: "http://artifact.worker.svc.cluster.local"
     # Image for the bootstrap init-container. MUST be pullable by the nodes
-    # (Docker Hub is usually unreachable); the default is in-cluster.
-    bootstrapImage: "git.agent.svc.cluster.local/root/alpine:3.24"
+    # (Docker Hub is usually unreachable); served from artifact (in-cluster).
+    bootstrapImage: "artifact.worker.svc.cluster.local/root/alpine:3.24"
     # HOME of the sandbox worker (config dirs are written under it). The
     # toolchain images run as root, so "/root".
     home: "/root"
@@ -253,7 +254,13 @@ gateway:
     # Sandboxes run a PRE-BUILT, worker-bundled image from SANDBOX_ORG (built by
     # abcp-sdk/worker's sandbox-images/build.sh). The gateway never injects the worker.
     sandboxOrg: "sandbox"
-    defaultSandboxImage: "git.agent.svc.cluster.local/sandbox/sandbox-base:debian-trixie"
+    # Sandbox images come from ARTIFACT (where the pre-built sandbox-* images
+    # live), NOT the build/push registry (Forgejo). When set, the gateway
+    # refuses any sandbox image from another registry; the default sandbox image
+    # below is derived from it. Distinct from infra.registry.host (build/push +
+    # catalog, which stays Forgejo).
+    sandboxImageRegistryHost: "artifact.worker.svc.cluster.local"
+    defaultSandboxImage: "artifact.worker.svc.cluster.local/sandbox/sandbox-base:debian-trixie"
   # Optional JSON overriding KVM/GPU device names, the GPU RuntimeClass (needed
   # for /dev/nvidia* to appear), and the KVM security context.
   runtime: ""
