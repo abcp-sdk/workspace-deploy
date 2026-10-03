@@ -24,8 +24,8 @@ helm lint ./charts/workspace --set namespaceOverride=agent
 helm template workspace ./charts/workspace -n agent --set namespaceOverride=agent
 ```
 
-Expected: **15 objects** (4 Deployments, 5 Services, 1 ConfigMap, 1 Secret,
-1 ServiceAccount, Role + RoleBinding, + the webui alias Service).
+Expected: **16 objects** (5 Deployments, 5 Services — incl. the webui alias,
+1 ConfigMap, 1 Secret, 1 ServiceAccount, Role + RoleBinding, 1 PodDisruptionBudget).
 
 Always render with `packageUpstream` set as well, since that branch is
 conditional:
@@ -69,7 +69,14 @@ helm template workspace ./charts/workspace -n agent --set namespaceOverride=agen
   ```sh
   curl -u root:<pat> http://git.agent.svc.cluster.local/v2/abcp/workspace-gateway/tags/list
   ```
-  Never commit credentials.
+- **Credentials live IN THIS REPO (private, in-cluster).** Owner policy: the
+  intranet repo is the store of record, so a redeploy never has to re-derive a
+  secret. Deploy-time values (incl. secrets) go in `deploy-values.private.yaml`
+  — pass it to `helm-deploy` (`--values @deploy-values.private.yaml`);
+  `CREDENTIALS.md` is the index of every credential (endpoint, use, rotation,
+  lost-key recovery). When you add a credential, record it in BOTH files. The
+  chart's `values.yaml` keeps non-secret working defaults, but the private file
+  is authoritative if they diverge.
 - **`manifests/` is legacy.** `manifests/workspace-gateway.yaml` predates the
   chart (superseded by `templates/gateway.yaml`); `manifests/rbac.yaml` mirrors
   `templates/worker-rbac.yaml`. They are kept for the one-time migration only.

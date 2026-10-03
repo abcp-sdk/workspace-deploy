@@ -1,0 +1,69 @@
+# coding-workspace/deploy — DEPLOY-TIME values (secrets + per-deployment config).
+#
+# PRIVATE values file: carries the live, in-cluster-only credentials so a
+# redeploy/upgrade never has to re-derive them (owner policy: everything is
+# intranet-only). Pass it to every deploy:
+#
+#   helm-deploy workspace coding-workspace/deploy --ref main \
+#     --values "@deploy-values.private.yaml"
+#
+# The chart's own values.yaml already carries these as working DEFAULTS
+# (single-node dev). This file records them EXPLICITLY and is the source of
+# truth if they ever diverge. See CREDENTIALS.md for the index + rotation.
+
+# ---- shared infra: NATS (dedicated `workspace` JetStream account) ----
+# MUST differ from every other stack (abcp-agent / easyvcs): two agents sharing
+# an account collide on abc.discover / abc-presence / ABC_MAILBOX.
+infra:
+  nats:
+    host: "nats.agent.svc.cluster.local"
+    port: 4222
+    user: "workspace"
+    password: "devpassword"
+  # ---- shared infra: Garage S3 (the agent's durable file bytes) ----
+  # Bucket `workspace`, region `garage`, path-style.
+  s3:
+    bucket: "workspace"
+    region: "garage"
+    endpoint: "http://s3.agent.svc.cluster.local"
+    accessKey: "GK66c166f3602ec6b5e762b21c"
+    secretKey: "685de4030127ea45b789396a1113e3b54f329e8e028ed4f47d0fbcd02da58c22"
+    pathStyle: true
+    prefix: "workspace"
+
+# ---- workspace agent (abc-protocol) auth + metadata DB ----
+agent:
+  auth:
+    adminToken: "dev-admin-token"
+    bootstrapTenant: "workspace"
+    bootstrapToken: "devworkspacetoken"
+  # Shared Postgres (db `workspace_agent`); password only (host/user are not
+  # secret and stay in values.yaml).
+  db:
+    postgres:
+      password: "devpassword"
+
+# ---- workspace gateway secrets ----
+gateway:
+  # Forgejo PAT (repo tools + EnsureRepo/protect). API writes need a real PAT.
+  forgejo:
+    token: "8a582a2d295a7d19f089b449bc29e5e4e34b3039"
+  # Shared token the workspace extension presents for sandbox RPCs.
+  serviceToken:
+    token: "devservice-token"
+  # Static admin token the gateway presents to the agent AdminService. Empty =
+  # falls back to agent.auth.adminToken.
+  agentAdminToken: "dev-admin-token"
+  # Brave Search API key (X-Subscription-Token) for the bundled brave-search
+  # tool; force-set on every tenant at boot.
+  braveApiKey: "BSAnI5ZDD4HltcHrC3ovDHGKyPLu7Y_"
+
+# ---- model gateway providers (gateway-* capabilities) ----
+# Shared apiKey for the gray multimodal gateway. NOTE: the workspace chart does
+# not (yet) seed model providers — the agent's registry is configured
+# separately — so this is recorded here purely so the key is not lost. Wire it
+# into a chart value (e.g. a gateway.providersApiKey → PROVISION_CALIBRATIONS)
+# before relying on it. Rotate via the gateway operator.
+gatewayProviders:
+  baseUrl: "https://api-gray.xueersi.com/ai-multimodal-gateway/v4/ai"
+  apiKey: "sk-code-dAeG7zpfYuusoIA0Z9LYumE6oDb7BNArqxTkk4th37lYtzRokkkvoY5Y"
