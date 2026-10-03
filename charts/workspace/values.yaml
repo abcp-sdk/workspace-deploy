@@ -66,7 +66,7 @@ agent:
   replicas: 2
   image:
     repository: git.agent.svc.cluster.local/abcp/agent
-    tag: "20261002130857"
+    tag: "20261003055924"
     pullPolicy: IfNotPresent
   # Metadata backend. `pg` = the SHARED Postgres (db `workspace_agent`), required
   # for multi-replica; `sqlite` keeps the DB on a hostPath /data volume (single
@@ -272,7 +272,7 @@ webui:
   enabled: true
   image:
     repository: git.agent.svc.cluster.local/abcp/workspace-webui
-    tag: "20261002132655"
+    tag: "20261003060358"
     pullPolicy: IfNotPresent
   port: 8080
   service:
