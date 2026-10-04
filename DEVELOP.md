@@ -58,14 +58,17 @@ helm template workspace ./charts/workspace -n agent --set namespaceOverride=agen
   every NEW sandbox gets the artifact package env + the bootstrap
   init-container. It only affects sandboxes created after the upgrade; existing
   ones keep their config. Set it back to `""` to disable.
-- **Preset whitelists use the STABLE qualified tool id `<extId>-<name>`**
-  (`bundled-*`, `workspace-*`, `playwright-*`), never the bare name — see
-  `abc-protocol/agent`'s `toolQualifiedName`. `charts/workspace/system-presets.json`
-  is a COPY of `workspace-gateway`'s `presets/system-presets.json` (regenerate
-  there with `go run ./cmd/gen-presets`, then copy it here). **The agent image
-  tag and the presets MUST ship together**: an agent that qualifies ids against
-  a bare-name whitelist (or a qualified whitelist against an old bare agent)
-  matches NO tools. `agent.image.tag` must be at/after `20261004-3`.
+- **Preset whitelists use the tool's OWN (self-namespaced) name** (e.g.
+  `todo-write`, `sandbox-submit-mr`, `browser-navigate`) — see
+  `abc-protocol/agent`'s `toolQualifiedName`, which uses the name as-is with
+  only out-of-charset characters sanitized to `-` (`model.image` →
+  `model-image`). `DISABLED_TOOLS` entries stay `<extId>.<name>` (a dot).
+  `charts/workspace/system-presets.json` is a COPY of `workspace-gateway`'s
+  `presets/system-presets.json` (regenerate there with `go run ./cmd/gen-presets`,
+  then copy it here). **The agent image tag and the presets MUST ship
+  together**: a mismatched pair (qualified ids against a bare agent, or vice
+  versa) matches NO tools and every session loses its tool list.
+  `agent.image.tag` must be at/after `20261004-4` (the bare-name revert).
 - **Component images are pulled from ARTIFACT, namespaced by the OWNING REPO's
   org** (`artifact.worker.svc.cluster.local/<org>/<name>`):
   `abc-protocol/agent`, `abc-protocol/playwright-extension`,
