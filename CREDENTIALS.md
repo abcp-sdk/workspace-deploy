@@ -15,6 +15,7 @@ is forgotten. Rotate deliberately — several of these invalidate live sessions.
 | Postgres (agent metadata) | `postgres.agent.svc.cluster.local:5432` (db `workspace_agent`) | user `workspace` / `devpassword` |
 | Forgejo (git) | `http://git.agent.svc.cluster.local` | PAT `8a582a2d…e4b3039` (root) |
 | buildkitd (image builds) | `tcp://buildkitd.agent.svc.cluster.local:1234` | (none; in-cluster) |
+| registry (images/builds/catalog) | `artifact.worker.svc.cluster.local` | read = **anonymous**; **write token = `dev-artifact-token`** (build push + catalog) |
 | Selenium (playwright) | `http://selenium.agent.svc.cluster.local:4444` | (none) |
 | outbound proxy (mihomo) | `http://mihomo.develop.svc.cluster.local:7890` | (none) |
 
