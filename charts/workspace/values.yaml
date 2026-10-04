@@ -158,7 +158,9 @@ gateway:
     # Also adds SANDBOX_IMAGE_REGISTRY_HOST (sandbox images from artifact).
     # And the agent.v1 sync that drops the cumulative token counters (reserved
     # 7/8/9). Superset of 20261003-sandboximg.
-    tag: "20261004-toksync"
+    # And the ALL-package-sources bootstrap (rubygems/conda/composer/npm/cran/
+    # cpan/luarocks/nix/conan/opam + maven sub-repos). Superset of 20261004-toksync.
+    tag: "20261004-allpkgs"
     pullPolicy: IfNotPresent
   # Namespace the sandbox/service backend manages, and where its RBAC lands.
   sandbox:
@@ -262,13 +264,9 @@ gateway:
     # below is derived from it. Distinct from infra.registry.host (build/push +
     # catalog, which stays Forgejo).
     sandboxImageRegistryHost: "artifact.worker.svc.cluster.local"
-    # `-v2` tag: same content as the rebuilt sandbox-base, but a NEW tag so
-    # kubelet's node image cache (keyed by tag) misses and pulls the current
-    # worker. The plain `debian-trixie` tag was cached on the nodes with an OLD
-    # worker that lacks the `toolchain-install` subcommand / /opt/toolchains, so
-    # declarative on-demand toolchains silently did nothing. `-v2` is the long
-    # term tag going forward.
-    defaultSandboxImage: "artifact.worker.svc.cluster.local/sandbox/sandbox-base:debian-trixie-v2"
+    # Plain tag: the `-v2` workaround tag (to dodge kubelet's node image cache)
+    # is no longer needed.
+    defaultSandboxImage: "artifact.worker.svc.cluster.local/sandbox/sandbox-base:debian-trixie"
   # Optional JSON overriding KVM/GPU device names, the GPU RuntimeClass (needed
   # for /dev/nvidia* to appear), and the KVM security context.
   runtime: ""
