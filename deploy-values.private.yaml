@@ -48,6 +48,11 @@ gateway:
   # Forgejo PAT (repo tools + EnsureRepo/protect). API writes need a real PAT.
   forgejo:
     token: "8a582a2d295a7d19f089b449bc29e5e4e34b3039"
+  # Registry WRITE credential for image builds (repo-build-image / oci-import);
+  # rendered into workspace-gateway-docker-config (DOCKER_CONFIG) + REGISTRY_*.
+  registryPush:
+    username: "root"
+    password: "dev-artifact-token"
   # Shared token the workspace extension presents for sandbox RPCs.
   serviceToken:
     token: "devservice-token"

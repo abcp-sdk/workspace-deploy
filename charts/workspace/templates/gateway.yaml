@@ -76,6 +76,10 @@ spec:
             {{- end }}
             - { name: IMAGE_REGISTRY_HOST, value: {{ .Values.infra.registry.host | quote }} }
             - { name: IMAGE_REGISTRY_SCHEME, value: {{ .Values.infra.registry.scheme | quote }} }
+            # Credentials for the catalog (registry v2) — defaults to the mounted
+            # Docker config below if unset.
+            - { name: REGISTRY_USER, value: {{ .Values.gateway.registryPush.username | quote }} }
+            - { name: REGISTRY_PASSWORD, value: {{ .Values.gateway.registryPush.password | quote }} }
             - { name: TOOLCHAIN_ORG, value: {{ .Values.infra.registry.toolchainOrg | quote }} }
             - { name: SANDBOX_ORG, value: {{ .Values.gateway.registry.sandboxOrg | quote }} }
             {{- with .Values.gateway.registry.sandboxImageRegistryHost }}
@@ -122,7 +126,7 @@ spec:
             periodSeconds: 15
           volumeMounts:
             - { mountPath: /data, name: data }
-            - { mountPath: /home/user/.docker, name: docker-config, readOnly: true }
+            - { mountPath: /home/user/.docker/config.json, name: docker-config, subPath: config.json, readOnly: true }
           resources:
             {{- toYaml .Values.gateway.resources | nindent 12 }}
       volumes:
@@ -134,9 +138,11 @@ spec:
           {{- else }}
           emptyDir: {}
           {{- end }}
-        # Registry push credentials for image builds (infra buildkitd's config).
+        # Registry WRITE credentials for image builds. Rendered here (not the
+        # shared buildkitd-docker-config) so the deployment is self-contained
+        # and its push target (artifact) has creds.
         - name: docker-config
-          secret: { secretName: buildkitd-docker-config }
+          secret: { secretName: workspace-gateway-docker-config }
 ---
 apiVersion: v1
 kind: Service
@@ -162,4 +168,24 @@ stringData:
   forgejo-token: {{ .Values.gateway.forgejo.token | quote }}
   service-token: {{ .Values.gateway.serviceToken.token | quote }}
   agent-admin-token: {{ .Values.gateway.agentAdminToken | default .Values.agent.auth.adminToken | quote }}
+{{- end }}
+{{- if and .Values.gateway.enabled .Values.gateway.registryPush.username }}
+---
+# DOCKER_CONFIG for the gateway's image-build push (buildctl reads this). Pushes
+# go to .Values.infra.registry.host (artifact); buildkitd marks it insecure.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: workspace-gateway-docker-config
+  namespace: {{ include "workspace.namespace" . }}
+  labels:
+    {{- include "workspace.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  config.json: |
+    {
+      "auths": {
+        "{{ .Values.infra.registry.host }}": { "auth": {{ (printf "%s:%s" .Values.gateway.registryPush.username .Values.gateway.registryPush.password) | b64enc | quote }} }
+      }
+    }
 {{- end }}

@@ -24,8 +24,9 @@ helm lint ./charts/workspace --set namespaceOverride=agent
 helm template workspace ./charts/workspace -n agent --set namespaceOverride=agent
 ```
 
-Expected: **16 objects** (5 Deployments, 5 Services — incl. the webui alias,
-1 ConfigMap, 1 Secret, 1 ServiceAccount, Role + RoleBinding, 1 PodDisruptionBudget).
+Expected: **17 objects** (5 Deployments, 5 Services — incl. the webui alias,
+1 ConfigMap, 2 Secrets (gateway secrets + the gateway DOCKER_CONFIG),
+1 ServiceAccount, Role + RoleBinding, 1 PodDisruptionBudget).
 
 Always render with `packageUpstream` set as well, since that branch is
 conditional:
