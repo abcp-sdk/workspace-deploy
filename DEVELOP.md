@@ -58,15 +58,20 @@ helm template workspace ./charts/workspace -n agent --set namespaceOverride=agen
   every NEW sandbox gets the artifact package env + the bootstrap
   init-container. It only affects sandboxes created after the upgrade; existing
   ones keep their config. Set it back to `""` to disable.
-- **Component images are pulled from ARTIFACT** (`artifact.worker.svc.cluster.local/abcp/...`) —
-  `agent` / `workspace-extension` / `playwright-extension` / `workspace-gateway`
-  / `workspace-webui`. Artifact is a plaintext-HTTP, insecure in-cluster
-  registry and serves `/abcp/*` anonymously (pull works with no creds).
-  `repo-build-image` pushes to the repo's own org (`coding-workspace/<name>`),
-  so after a build you must copy each new tag into `abcp/` (e.g.
-  `skopeo copy --dest-creds root:dev-artifact-token --dest-tls-verify=false
-  docker://artifact.../coding-workspace/<name>:<tag> docker://artifact.../abcp/<name>:<tag>`).
-  Sandbox images already come from artifact (`sandbox/*`).
+- **Component images are pulled from ARTIFACT, namespaced by the OWNING REPO's
+  org** (`artifact.worker.svc.cluster.local/<org>/<name>`):
+  `abc-protocol/agent`, `abc-protocol/playwright-extension`,
+  `coding-workspace/workspace-{extension,gateway,webui}`. The old `abcp/`
+  namespace is LEGACY — do not add new refs to it. (Selenium/Caddy-style
+  upstreams use a neutral namespace such as `library/`.) Artifact is a
+  plaintext-HTTP, insecure in-cluster registry; `/abcp/*`, `/abc-protocol/*`
+  and `/coding-workspace/*` all serve pulls anonymously (no creds needed).
+  `repo-build-image` pushes to the repo's own org, so after a build you copy
+  each new tag within artifact to the org the chart references (e.g.
+  `skopeo copy --src-creds root:dev-artifact-token --dest-creds root:dev-artifact-token
+  --src-tls-verify=false --dest-tls-verify=false
+  docker://artifact.../abcp/<name>:<tag> docker://artifact.../coding-workspace/<name>:<tag>`).
+  Sandbox images come from artifact (`sandbox/*`).
 - **Forgejo (`git.agent.svc.cluster.local`) stays for git + the build/push
   registry** (`infra.forgejo.url`, `infra.registry.host`) — that is the code
   source of truth and where builds push; only the *sandbox/component image
@@ -79,11 +84,14 @@ helm template workspace ./charts/workspace -n agent --set namespaceOverride=agen
   cache was refreshed (e.g. confirm the new worker behaviour — `go version`
   works, i.e. `toolchain-install` is present), the `-v2` workaround tag can be
   dropped again (done in #18). When in doubt, keep the fresh tag.
-- **Verifying a registry tag:** the registry API requires auth — anonymous
-  `GET /v2/...` returns 401. Use the Forgejo PAT from
-  `charts/workspace/values.yaml` (`gateway.forgejo.token`):
+- **Verifying a registry tag:** Forgejo (`git.agent...`) requires auth —
+  anonymous `GET /v2/...` returns 401; use the PAT (`gateway.forgejo.token`).
+  ARTIFACT (`artifact.worker...`) serves pulls anonymously:
   ```sh
-  curl -u root:<pat> http://git.agent.svc.cluster.local/v2/abcp/workspace-gateway/tags/list
+  # Forgejo (auth):
+  curl -u root:<pat> http://git.agent.svc.cluster.local/v2/coding-workspace/workspace-gateway/tags/list
+  # Artifact (anonymous):
+  curl -s http://artifact.worker.svc.cluster.local/v2/coding-workspace/workspace-gateway/tags/list
   ```
 - **Credentials live IN THIS REPO (private, in-cluster).** Owner policy: the
   intranet repo is the store of record, so a redeploy never has to re-derive a
