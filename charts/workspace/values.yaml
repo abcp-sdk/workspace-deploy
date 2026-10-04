@@ -162,7 +162,9 @@ gateway:
     # cpan/luarocks/nix/conan/opam + maven sub-repos). Superset of 20261004-toksync.
     # And the maven sub-repo fix (artifact #40: maven/_upstream/<host>/).
     # Superset of 20261004-allpkgs.
-    tag: "20261004-mavenfix"
+    # And background image builds (BuildSandboxImage returns build_id +
+    # GetBuildStatus). Superset of 20261004-mavenfix.
+    tag: "20261004-bgbuild"
     pullPolicy: IfNotPresent
   # Namespace the sandbox/service backend manages, and where its RBAC lands.
   sandbox:
