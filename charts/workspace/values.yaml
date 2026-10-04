@@ -178,7 +178,12 @@ gateway:
     # And live build logs (BuildStream + GetBuildStatus since_offset + ListBuilds)
     # AND the MR-submitted notification (mr_notify: SubmitMR wakes the target
     # branch session). Superset of 20261004-bgbuild.
-    tag: "20261004-mrnotify"
+    # And the OCI catalog over the standard registry v2 API (internal/registry:
+    # /v2/_catalog + /v2/<name>/tags/list) instead of Forgejo's packages API —
+    # with IMAGE_REGISTRY_HOST (the chart's infra.registry.host) now = artifact,
+    # images/builds/catalog all come from artifact and Forgejo is git-only.
+    # Superset of 20261004-mrnotify.
+    tag: "20261004-regcatalog"
     pullPolicy: IfNotPresent
   # Namespace the sandbox/service backend manages, and where its RBAC lands.
   sandbox:
