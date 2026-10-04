@@ -156,7 +156,9 @@ gateway:
     # (HelmReleaseInfo.chart_version/app_version/objects) AND the agent.v1
     # since_msg forward (vendored proto + regenerated gen/es).
     # Also adds SANDBOX_IMAGE_REGISTRY_HOST (sandbox images from artifact).
-    tag: "20261003-sandboximg"
+    # And the agent.v1 sync that drops the cumulative token counters (reserved
+    # 7/8/9). Superset of 20261003-sandboximg.
+    tag: "20261004-toksync"
     pullPolicy: IfNotPresent
   # Namespace the sandbox/service backend manages, and where its RBAC lands.
   sandbox:
