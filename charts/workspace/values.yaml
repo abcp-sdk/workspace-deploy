@@ -299,7 +299,9 @@ webui:
   enabled: true
   image:
     repository: artifact.worker.svc.cluster.local/coding-workspace/workspace-webui
-    tag: "20261003215825"
+    # Build page + Services「镜像构建」栏 + card links (#8) + self-contained
+    # multi-stage Dockerfile (#10, no prebuilt dist/).
+    tag: "20261004-164050"
     pullPolicy: IfNotPresent
   port: 8080
   service:
