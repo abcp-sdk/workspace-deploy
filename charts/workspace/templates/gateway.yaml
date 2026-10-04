@@ -79,8 +79,9 @@ spec:
             - { name: TOOLCHAIN_ORG, value: {{ .Values.infra.registry.toolchainOrg | quote }} }
             - { name: SANDBOX_ORG, value: {{ .Values.gateway.registry.sandboxOrg | quote }} }
             {{- with .Values.gateway.registry.sandboxImageRegistryHost }}
-            # Sandbox images MUST come from this registry (artifact); the
-            # build/push + catalog registry stays IMAGE_REGISTRY_HOST (Forgejo).
+            # Sandbox images MUST come from this registry. It normally equals
+            # IMAGE_REGISTRY_HOST (artifact); kept separate so a deployment can
+            # source sandbox images from a different registry if ever needed.
             - { name: SANDBOX_IMAGE_REGISTRY_HOST, value: {{ . | quote }} }
             {{- end }}
             - { name: DEFAULT_SANDBOX_IMAGE, value: {{ .Values.gateway.registry.defaultSandboxImage | quote }} }

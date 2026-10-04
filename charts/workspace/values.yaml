@@ -48,12 +48,16 @@ infra:
   proxy:
     http: "http://mihomo.develop.svc.cluster.local:7890"
     https: "http://mihomo.develop.svc.cluster.local:7890"
-  # Registry host + toolchain org surfaced by list-oci-images. The registry is
-  # reached IN-CLUSTER over plaintext HTTP (containerd + buildkitd are both
-  # configured with git.agent.svc.cluster.local as an insecure registry), so
-  # image refs never leave the cluster network.
+  # Registry host + toolchain org surfaced by list-oci-images. This is the
+  # BUILD/PUSH target and the OCI catalog source — it is ARTIFACT, not Forgejo:
+  # the whole deployment sources images, builds and the catalog from ONE
+  # registry, while Forgejo (infra.forgejo.url) stays ONLY the git host.
+  # PREREQUISITE: artifact.worker.svc.cluster.local must be an INSECURE registry
+  # on BOTH the nodes' containerd AND buildkitd (so push/pull over plaintext
+  # HTTP work), and the build push credential (DOCKER_CONFIG) must be an
+  # artifact WRITE token — not the Forgejo PAT.
   registry:
-    host: "git.agent.svc.cluster.local"
+    host: "artifact.worker.svc.cluster.local"
     scheme: "http"
     toolchainOrg: "agent-toolchain"
 
