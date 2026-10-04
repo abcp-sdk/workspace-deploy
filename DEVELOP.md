@@ -71,6 +71,14 @@ helm template workspace ./charts/workspace -n agent --set namespaceOverride=agen
   registry** (`infra.forgejo.url`, `infra.registry.host`) — that is the code
   source of truth and where builds push; only the *sandbox/component image
   source* moved to artifact. Migrating Forgejo itself is a separate project.
+- **Repushing the SAME tag does not update running nodes.** kubelet/containerd
+  caches images keyed by tag, so re-pushing `sandbox-base:debian-trixie` (or any
+  component tag) with new content can still resolve to the cached old digest on
+  a node — `imagePullPolicy: IfNotPresent` then never pulls. To ship new content
+  reliably, bump the TAG (e.g. `…:debian-trixie-v2`). After verifying the node
+  cache was refreshed (e.g. confirm the new worker behaviour — `go version`
+  works, i.e. `toolchain-install` is present), the `-v2` workaround tag can be
+  dropped again (done in #18). When in doubt, keep the fresh tag.
 - **Verifying a registry tag:** the registry API requires auth — anonymous
   `GET /v2/...` returns 401. Use the Forgejo PAT from
   `charts/workspace/values.yaml` (`gateway.forgejo.token`):
