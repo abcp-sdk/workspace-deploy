@@ -66,7 +66,7 @@ agent:
   replicas: 2
   image:
     repository: artifact.worker.svc.cluster.local/abcp/agent
-    tag: "20261003144220"
+    tag: "20261004-1"
     pullPolicy: IfNotPresent
   # Metadata backend. `pg` = the SHARED Postgres (db `workspace_agent`), required
   # for multi-replica; `sqlite` keeps the DB on a hostPath /data volume (single
@@ -136,7 +136,7 @@ playwright:
   enabled: true
   image:
     repository: artifact.worker.svc.cluster.local/abcp/playwright-extension
-    tag: "20260924170139"
+    tag: "20261001064342"
     pullPolicy: IfNotPresent
   seedTenant: "*"
   viewport: "1280x720"
