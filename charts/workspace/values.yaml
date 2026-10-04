@@ -160,7 +160,9 @@ gateway:
     # 7/8/9). Superset of 20261003-sandboximg.
     # And the ALL-package-sources bootstrap (rubygems/conda/composer/npm/cran/
     # cpan/luarocks/nix/conan/opam + maven sub-repos). Superset of 20261004-toksync.
-    tag: "20261004-allpkgs"
+    # And the maven sub-repo fix (artifact #40: maven/_upstream/<host>/).
+    # Superset of 20261004-allpkgs.
+    tag: "20261004-mavenfix"
     pullPolicy: IfNotPresent
   # Namespace the sandbox/service backend manages, and where its RBAC lands.
   sandbox:
