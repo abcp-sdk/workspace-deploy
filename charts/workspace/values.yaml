@@ -65,7 +65,7 @@ agent:
   # the others keep serving; the per-session NATS lease arbitrates turns.
   replicas: 2
   image:
-    repository: artifact.worker.svc.cluster.local/abcp/agent
+    repository: artifact.worker.svc.cluster.local/abc-protocol/agent
     tag: "20261004-1"
     pullPolicy: IfNotPresent
   # Metadata backend. `pg` = the SHARED Postgres (db `workspace_agent`), required
@@ -122,7 +122,7 @@ agent:
 workspaceExtension:
   enabled: true
   image:
-    repository: artifact.worker.svc.cluster.local/abcp/workspace-extension
+    repository: artifact.worker.svc.cluster.local/coding-workspace/workspace-extension
     tag: "20261004131500"
     pullPolicy: IfNotPresent
   # Tenant seeded with the gateway/forgejo defaults. `"*"` = every tenant.
@@ -135,7 +135,7 @@ workspaceExtension:
 playwright:
   enabled: true
   image:
-    repository: artifact.worker.svc.cluster.local/abcp/playwright-extension
+    repository: artifact.worker.svc.cluster.local/abc-protocol/playwright-extension
     tag: "20261001064342"
     pullPolicy: IfNotPresent
   seedTenant: "*"
@@ -150,7 +150,7 @@ playwright:
 gateway:
   enabled: true
   image:
-    repository: artifact.worker.svc.cluster.local/abcp/workspace-gateway
+    repository: artifact.worker.svc.cluster.local/coding-workspace/workspace-gateway
     # Tag that implements SANDBOX_PACKAGE_UPSTREAM wiring (package-source
     # injection: env + bootstrap init-container), the Helm release-detail fields
     # (HelmReleaseInfo.chart_version/app_version/objects) AND the agent.v1
@@ -288,7 +288,7 @@ gateway:
 webui:
   enabled: true
   image:
-    repository: artifact.worker.svc.cluster.local/abcp/workspace-webui
+    repository: artifact.worker.svc.cluster.local/coding-workspace/workspace-webui
     tag: "20261003215825"
     pullPolicy: IfNotPresent
   port: 8080
