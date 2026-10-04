@@ -134,7 +134,9 @@ workspaceExtension:
   enabled: true
   image:
     repository: artifact.worker.svc.cluster.local/coding-workspace/workspace-extension
-    tag: "20261004131500"
+    # 0.17.0: sandbox-create `os` + `disk` (windows/macos VM via golden-disk);
+    # also the background-build repo-build-status and the computer-use tools.
+    tag: "20261004213500"
     pullPolicy: IfNotPresent
   # Tenant seeded with the gateway/forgejo defaults. `"*"` = every tenant.
   seedTenant: "*"
