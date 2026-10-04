@@ -184,7 +184,9 @@ gateway:
     # images/builds/catalog all come from artifact and Forgejo is git-only.
     # And the sandbox Service port fix (80 → targetPort 48080, + wait.go).
     # Superset of 20261004-regcatalog.
-    tag: "20261004-svcport80"
+    # And CreateSandbox os+disk (VM Windows/macOS via golden-disk + shared cache
+    # PVC). Superset of 20261004-svcport80.
+    tag: "20261004-osdisk"
     pullPolicy: IfNotPresent
   # Namespace the sandbox/service backend manages, and where its RBAC lands.
   sandbox:
