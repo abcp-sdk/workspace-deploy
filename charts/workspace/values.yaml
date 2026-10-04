@@ -123,7 +123,7 @@ workspaceExtension:
   enabled: true
   image:
     repository: artifact.worker.svc.cluster.local/abcp/workspace-extension
-    tag: "20261003075914"
+    tag: "20261004131500"
     pullPolicy: IfNotPresent
   # Tenant seeded with the gateway/forgejo defaults. `"*"` = every tenant.
   seedTenant: "*"
