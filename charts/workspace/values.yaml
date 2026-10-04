@@ -182,8 +182,9 @@ gateway:
     # /v2/_catalog + /v2/<name>/tags/list) instead of Forgejo's packages API —
     # with IMAGE_REGISTRY_HOST (the chart's infra.registry.host) now = artifact,
     # images/builds/catalog all come from artifact and Forgejo is git-only.
-    # Superset of 20261004-mrnotify.
-    tag: "20261004-regcatalog"
+    # And the sandbox Service port fix (80 → targetPort 48080, + wait.go).
+    # Superset of 20261004-regcatalog.
+    tag: "20261004-svcport80"
     pullPolicy: IfNotPresent
   # Namespace the sandbox/service backend manages, and where its RBAC lands.
   sandbox:
