@@ -188,7 +188,10 @@ gateway:
     # Superset of 20261004-regcatalog.
     # And CreateSandbox os+disk (VM Windows/macOS via golden-disk + shared cache
     # PVC). Superset of 20261004-svcport80.
-    tag: "20261004-osdisk"
+    # And the service-log container-name fallback (svc → pod's first container),
+    # so service-logs works for non-workspace pods (e.g. easyops).
+    # Superset of 20261004-osdisk.
+    tag: "20261005-logfallback"
     pullPolicy: IfNotPresent
   # Namespace the sandbox/service backend manages, and where its RBAC lands.
   sandbox:
