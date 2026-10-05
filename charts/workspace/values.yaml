@@ -134,9 +134,11 @@ workspaceExtension:
   enabled: true
   image:
     repository: artifact.worker.svc.cluster.local/coding-workspace/workspace-extension
-    # 0.17.1: computer-use Wayland screenshots via `grim` (region converted to
-    # grim's WxH+X+Y); also sandbox-create os/disk and repo-build-status.
-    tag: "20261005094500"
+    # 0.18.0: computer-use is a thin proxy over the worker's ComputerService
+    # (gate on Info.tools; Wayland region conversion now lives in the worker).
+    # REQUIRES the sandbox images to carry the current worker (defaultSandboxImage
+    # is pinned to :20261005 above) — ship them together.
+    tag: "20261005122000"
     pullPolicy: IfNotPresent
   # Tenant seeded with the gateway/forgejo defaults. `"*"` = every tenant.
   seedTenant: "*"
@@ -307,7 +309,10 @@ gateway:
     sandboxImageRegistryHost: "artifact.worker.svc.cluster.local"
     # Plain tag: the `-v2` workaround tag (to dodge kubelet's node image cache)
     # is no longer needed.
-    defaultSandboxImage: "artifact.worker.svc.cluster.local/sandbox/sandbox-base:debian-trixie"
+    # 20261005: rebuilt with the current worker (ComputerService + grimRegion).
+    # The workspace-extension 0.18.0 thin-proxy computer-use REQUIRES this worker,
+    # so this tag and the extension tag must ship together.
+    defaultSandboxImage: "artifact.worker.svc.cluster.local/sandbox/sandbox-base:20261005"
   # Optional JSON overriding KVM/GPU device names, the GPU RuntimeClass (needed
   # for /dev/nvidia* to appear), and the KVM security context.
   runtime: ""
