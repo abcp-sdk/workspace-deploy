@@ -191,7 +191,9 @@ gateway:
     # And the service-log container-name fallback (svc → pod's first container),
     # so service-logs works for non-workspace pods (e.g. easyops).
     # Superset of 20261004-osdisk.
-    tag: "20261005-logfallback"
+    # And abc-protocol-go v2.7.1 (ABC_EVENTS keeps lifecycle + session.changed).
+    # Superset of 20261005-logfallback.
+    tag: "20261005-nats271"
     pullPolicy: IfNotPresent
   # Namespace the sandbox/service backend manages, and where its RBAC lands.
   sandbox:
