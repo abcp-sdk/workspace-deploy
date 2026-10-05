@@ -327,8 +327,9 @@ webui:
     # Build page + Services「镜像构建」栏 + card links (#8) + self-contained
     # multi-stage Dockerfile (#10, no prebuilt dist/) + Services sandbox-row
     # worker-frontend external link & copy button (#11). Superset of
-    # 20261004-164050.
-    tag: "20261004-192151"
+    # 20261004-164050. And #12: SandboxDetail header key button (resolveSandbox
+    # token → clipboard + toast; i18n copyToken). Superset of 20261004-192151.
+    tag: "20261005-080017"
     pullPolicy: IfNotPresent
   port: 8080
   service:
